@@ -1,12 +1,12 @@
 -- ============================================================
 -- SEED: Badges
 -- ============================================================
-INSERT INTO badges (id, code, title, description) VALUES
-  (uuid_generate_v4(), 'FIRST_LESSON', 'First Steps', 'Completed your very first lesson'),
-  (uuid_generate_v4(), 'SEVEN_DAY_STREAK', 'Week Warrior', 'Maintained a 7-day learning streak'),
-  (uuid_generate_v4(), 'TEN_CORRECT', 'Perfect Ten', 'Answered 10 practice questions correctly'),
-  (uuid_generate_v4(), 'FIRST_QUIZ_PASS', 'Quiz Champion', 'Passed your first module quiz')
-ON CONFLICT (code) DO NOTHING;
+INSERT INTO badges (id, key, title, description, icon_name) VALUES
+  (uuid_generate_v4(), 'FIRST_LESSON', 'First Steps', 'Completed your very first lesson', 'school'),
+  (uuid_generate_v4(), 'SEVEN_DAY_STREAK', 'Week Warrior', 'Maintained a 7-day learning streak', 'local_fire_department'),
+  (uuid_generate_v4(), 'TEN_CORRECT', 'Perfect Ten', 'Answered 10 practice questions correctly', 'check_circle'),
+  (uuid_generate_v4(), 'FIRST_QUIZ_PASS', 'Quiz Champion', 'Passed your first module quiz', 'emoji_events')
+ON CONFLICT (key) DO NOTHING;
 
 -- ============================================================
 -- SEED: App Config

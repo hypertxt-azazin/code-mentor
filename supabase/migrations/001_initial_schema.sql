@@ -77,8 +77,11 @@ CREATE TABLE IF NOT EXISTS user_lesson_progress (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   lesson_id uuid NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  completed boolean DEFAULT false,
+  is_completed boolean DEFAULT false,
+  challenges_attempted int DEFAULT 0,
+  challenges_correct int DEFAULT 0,
   completed_at timestamptz,
+  updated_at timestamptz DEFAULT now(),
   UNIQUE(user_id, lesson_id)
 );
 
@@ -86,10 +89,11 @@ CREATE TABLE IF NOT EXISTS user_challenge_attempts (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   challenge_id uuid NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
+  lesson_id uuid REFERENCES lessons(id) ON DELETE CASCADE,
   user_answer text,
   is_correct boolean,
   time_taken_seconds int,
-  created_at timestamptz DEFAULT now()
+  attempted_at timestamptz DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS user_quiz_attempts (
@@ -100,7 +104,7 @@ CREATE TABLE IF NOT EXISTS user_quiz_attempts (
   total int NOT NULL,
   passed boolean NOT NULL DEFAULT false,
   answers jsonb NOT NULL DEFAULT '{}',
-  created_at timestamptz DEFAULT now()
+  attempted_at timestamptz DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS user_streaks (
@@ -116,9 +120,10 @@ CREATE TABLE IF NOT EXISTS user_streaks (
 
 CREATE TABLE IF NOT EXISTS badges (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-  code text UNIQUE NOT NULL,
+  key text UNIQUE NOT NULL,
   title text NOT NULL,
   description text,
+  icon_name text DEFAULT 'star',
   created_at timestamptz DEFAULT now()
 );
 
@@ -126,7 +131,8 @@ CREATE TABLE IF NOT EXISTS user_badges (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   badge_id uuid NOT NULL REFERENCES badges(id) ON DELETE CASCADE,
-  earned_at timestamptz DEFAULT now(),
+  badge_key text NOT NULL,
+  awarded_at timestamptz DEFAULT now(),
   UNIQUE(user_id, badge_id)
 );
 
@@ -171,9 +177,9 @@ CREATE INDEX IF NOT EXISTS idx_quiz_questions_module_id ON quiz_questions(module
 -- FK + time indexes on user progress tables
 CREATE INDEX IF NOT EXISTS idx_user_lesson_progress_user_id ON user_lesson_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_lesson_progress_lesson_id ON user_lesson_progress(lesson_id);
-CREATE INDEX IF NOT EXISTS idx_challenge_attempts_user_created ON user_challenge_attempts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_challenge_attempts_user_attempted ON user_challenge_attempts(user_id, attempted_at DESC);
 CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_module ON user_quiz_attempts(user_id, module_id);
-CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_created ON user_quiz_attempts(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_quiz_attempts_user_attempted ON user_quiz_attempts(user_id, attempted_at DESC);
 
 -- User badges index
 CREATE INDEX IF NOT EXISTS idx_user_badges_user_id ON user_badges(user_id);
