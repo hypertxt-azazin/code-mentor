@@ -132,7 +132,7 @@ class ProgressScreen extends ConsumerWidget {
                     .where((p) => p.isCompleted)
                     .toList();
                 if (completed.isEmpty) {
-                  return const Text('No lessons completed yet.');
+                  return const Text('No cards completed yet.');
                 }
                 return Column(
                   children: [

@@ -4,7 +4,7 @@ class AppStrings {
 
   // ── App ──────────────────────────────────────────────────────────────────
   static const String appName = 'CodePath';
-  static const String tagline = 'Learn to code, one lesson at a time.';
+  static const String tagline = 'Build real skills, one card at a time.';
 
   // ── Navigation ───────────────────────────────────────────────────────────
   static const String navHome = 'Home';
@@ -29,54 +29,55 @@ class AppStrings {
   static const String orDivider = 'or';
 
   // ── Catalog ───────────────────────────────────────────────────────────────
-  static const String tracks = 'Tracks';
-  static const String track = 'Track';
-  static const String modules = 'Modules';
-  static const String module = 'Module';
-  static const String lessons = 'Lessons';
-  static const String lesson = 'Lesson';
+  static const String tracks = 'Roadmaps';
+  static const String track = 'Roadmap';
+  static const String modules = 'Stages';
+  static const String module = 'Stage';
+  static const String lessons = 'Cards';
+  static const String lesson = 'Card';
   static const String difficulty = 'Difficulty';
   static const String beginner = 'Beginner';
   static const String intermediate = 'Intermediate';
   static const String advanced = 'Advanced';
   static const String estimatedTime = 'Est. time';
   static const String minutes = 'min';
-  static const String startTrack = 'Start Track';
+  static const String startTrack = 'Start Roadmap';
   static const String continueTrack = 'Continue';
   static const String viewAll = 'View All';
-  static const String searchTracks = 'Search tracks…';
+  static const String searchTracks = 'Search roadmaps…';
   static const String filterByTag = 'Filter by tag';
-  static const String noTracksFound = 'No tracks found.';
-  static const String noModulesFound = 'No modules found.';
-  static const String noLessonsFound = 'No lessons found.';
+  static const String noTracksFound = 'No roadmaps found.';
+  static const String noModulesFound = 'No stages found.';
+  static const String noLessonsFound = 'No cards found.';
 
   // ── Lesson / Practice ────────────────────────────────────────────────────
-  static const String practice = 'Practice';
+  static const String practice = 'Drills';
   static const String submit = 'Submit';
   static const String checkAnswer = 'Check Answer';
   static const String correct = 'Correct!';
   static const String incorrect = 'Incorrect';
   static const String tryAgain = 'Try Again';
-  static const String nextChallenge = 'Next Challenge';
-  static const String finishLesson = 'Finish Lesson';
+  static const String nextChallenge = 'Next Drill';
+  static const String finishLesson = 'Finish Card';
   static const String hintLabel = 'Hint';
   static const String showHint = 'Show Hint';
   static const String explanation = 'Explanation';
   static const String yourAnswer = 'Your answer…';
   static const String chooseAnswer = 'Choose an answer';
-  static const String challengeOf = 'Challenge {current} of {total}';
+  static const String challengeOf = 'Drill {current} of {total}';
+  static const String keyTakeaways = 'Key Takeaways';
 
   // ── Quiz ──────────────────────────────────────────────────────────────────
-  static const String quiz = 'Quiz';
-  static const String startQuiz = 'Start Quiz';
-  static const String retakeQuiz = 'Retake Quiz';
+  static const String quiz = 'Checkpoint';
+  static const String startQuiz = 'Start Checkpoint';
+  static const String retakeQuiz = 'Retake Checkpoint';
   static const String quizScore = 'Score';
   static const String quizPassed = 'Passed! 🎉';
   static const String quizFailed = 'Not quite – try again';
   static const String questionOf = 'Question {current} of {total}';
   static const String nextQuestion = 'Next Question';
-  static const String submitQuiz = 'Submit Quiz';
-  static const String quizResults = 'Quiz Results';
+  static const String submitQuiz = 'Submit Checkpoint';
+  static const String quizResults = 'Checkpoint Results';
   static const String passThreshold = 'Pass threshold';
 
   // ── Progress ──────────────────────────────────────────────────────────────
@@ -87,9 +88,9 @@ class AppStrings {
   static const String days = 'days';
   static const String badges = 'Badges';
   static const String noBadgesYet = 'No badges yet – keep learning!';
-  static const String lessonsCompleted = 'Lessons Completed';
-  static const String modulesCompleted = 'Modules Completed';
-  static const String tracksCompleted = 'Tracks Completed';
+  static const String lessonsCompleted = 'Cards Completed';
+  static const String modulesCompleted = 'Stages Completed';
+  static const String tracksCompleted = 'Roadmaps Completed';
   static const String totalXp = 'Total XP';
   static const String weeklyActivity = 'Weekly Activity';
   static const String overallProgress = 'Overall Progress';
@@ -105,32 +106,32 @@ class AppStrings {
   static const String monthlyPlan = 'Monthly';
   static const String yearlyPlan = 'Yearly (Best Value)';
   static const String premiumFeatures = 'Premium Features';
-  static const String unlockAllTracks = 'Unlock all tracks & modules';
-  static const String unlimitedPractice = 'Unlimited practice attempts';
+  static const String unlockAllTracks = 'Unlock all roadmaps & stages';
+  static const String unlimitedPractice = 'Unlimited drill attempts';
   static const String offlineAccess = 'Offline access';
-  static const String dailyLimitReached = 'Daily practice limit reached';
-  static const String upgradeToUnlock = 'Upgrade to unlock this module';
-  static const String freeModulesNote = 'Free plan: first {n} modules per track';
+  static const String dailyLimitReached = 'Daily drill limit reached';
+  static const String upgradeToUnlock = 'Upgrade to unlock this stage';
+  static const String freeModulesNote = 'Free plan: first {n} stages per roadmap';
   static const String attemptsLeft = '{n} attempts left today';
 
   // ── Admin Panel ───────────────────────────────────────────────────────────
   static const String adminPanel = 'Admin Panel';
   static const String manageContent = 'Manage Content';
-  static const String addTrack = 'Add Track';
-  static const String editTrack = 'Edit Track';
-  static const String deleteTrack = 'Delete Track';
-  static const String addModule = 'Add Module';
-  static const String editModule = 'Edit Module';
-  static const String deleteModule = 'Delete Module';
-  static const String addLesson = 'Add Lesson';
-  static const String editLesson = 'Edit Lesson';
-  static const String deleteLesson = 'Delete Lesson';
-  static const String addChallenge = 'Add Challenge';
-  static const String editChallenge = 'Edit Challenge';
-  static const String deleteChallenge = 'Delete Challenge';
-  static const String addQuizQuestion = 'Add Quiz Question';
-  static const String editQuizQuestion = 'Edit Quiz Question';
-  static const String deleteQuizQuestion = 'Delete Quiz Question';
+  static const String addTrack = 'Add Roadmap';
+  static const String editTrack = 'Edit Roadmap';
+  static const String deleteTrack = 'Delete Roadmap';
+  static const String addModule = 'Add Stage';
+  static const String editModule = 'Edit Stage';
+  static const String deleteModule = 'Delete Stage';
+  static const String addLesson = 'Add Card';
+  static const String editLesson = 'Edit Card';
+  static const String deleteLesson = 'Delete Card';
+  static const String addChallenge = 'Add Drill';
+  static const String editChallenge = 'Edit Drill';
+  static const String deleteChallenge = 'Delete Drill';
+  static const String addQuizQuestion = 'Add Checkpoint Question';
+  static const String editQuizQuestion = 'Edit Checkpoint Question';
+  static const String deleteQuizQuestion = 'Delete Checkpoint Question';
   static const String publishContent = 'Publish';
   static const String unpublishContent = 'Unpublish';
   static const String confirmDelete = 'Are you sure you want to delete this?';
@@ -140,11 +141,16 @@ class AppStrings {
   static const String welcome = 'Welcome to CodePath!';
   static const String chooseInterests = 'What do you want to learn?';
   static const String chooseInterestsSubtitle =
-      'Pick topics you\'re interested in. We\'ll personalise your catalog.';
+      'Pick topics you\'re interested in. We\'ll personalise your roadmaps.';
   static const String skip = 'Skip';
   static const String getStarted = 'Get Started';
   static const String next = 'Next';
   static const String back = 'Back';
+
+  // ── Home screen sections ─────────────────────────────────────────────────
+  static const String todayPlan = "Today's Plan";
+  static const String continueSection = 'Continue';
+  static const String recommendedRoadmaps = 'Recommended Roadmaps';
 
   // Interest tags shown during onboarding
   static const List<String> interestTags = [

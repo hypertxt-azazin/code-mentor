@@ -24,7 +24,7 @@ class QuizScreen extends ConsumerWidget {
     if (state.questions.isEmpty) {
       return Scaffold(
         appBar: AppBar(title: const Text(AppStrings.quiz)),
-        body: const Center(child: Text('No quiz questions available.')),
+        body: const Center(child: Text('No checkpoint questions available.')),
       );
     }
 
@@ -272,7 +272,7 @@ class _QuizResultsScreen extends ConsumerWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Back to Module'),
+                child: const Text('Back to Stage'),
               ),
             ),
           ],

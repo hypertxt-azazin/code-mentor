@@ -44,37 +44,162 @@ class LessonScreen extends ConsumerWidget {
 
           final sections = lesson.content['sections'] as List<dynamic>? ?? [];
 
+          // Collect key takeaways from 'heading' or 'key_takeaway' sections
+          final takeaways = sections
+              .whereType<Map<String, dynamic>>()
+              .where((s) =>
+                  s['type'] == 'key_takeaway' || s['type'] == 'heading')
+              .map((s) => s['content'] as String? ?? '')
+              .where((t) => t.isNotEmpty)
+              .toList();
+
+          final isWide = MediaQuery.of(context).size.width >= 720;
+
+          final contentList = ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: sections.length,
+            itemBuilder: (context, i) {
+              final section =
+                  sections[i] as Map<String, dynamic>? ?? {};
+              final type = section['type'] as String? ?? 'paragraph';
+              final content = section['content'] as String? ?? '';
+              return _SectionWidget(type: type, content: content);
+            },
+          );
+
+          final bottomBar = _LessonBottomBar(
+            lessonId: lessonId,
+            moduleId: lesson.moduleId,
+            isCompleted: isCompleted,
+            onComplete: profile != null
+                ? () async {
+                    await ref
+                        .read(lessonCompletionProvider(lessonId).notifier)
+                        .markComplete(profile.id);
+                  }
+                : null,
+          );
+
+          if (isWide) {
+            // Web layout: content + Key Takeaways side panel
+            return Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 3, child: contentList),
+                      VerticalDivider(width: 1, color: theme.dividerColor),
+                      SizedBox(
+                        width: 260,
+                        child: _KeyTakeawaysPanel(takeaways: takeaways),
+                      ),
+                    ],
+                  ),
+                ),
+                bottomBar,
+              ],
+            );
+          }
+
+          // Mobile layout: content + collapsible key takeaways
           return Column(
             children: [
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: sections.length,
-                  itemBuilder: (context, i) {
-                    final section =
-                        sections[i] as Map<String, dynamic>? ?? {};
-                    final type = section['type'] as String? ?? 'paragraph';
-                    final content = section['content'] as String? ?? '';
-                    return _SectionWidget(type: type, content: content);
-                  },
-                ),
-              ),
-              _LessonBottomBar(
-                lessonId: lessonId,
-                moduleId: lesson.moduleId,
-                isCompleted: isCompleted,
-                onComplete: profile != null
-                    ? () async {
-                        await ref
-                            .read(lessonCompletionProvider(lessonId).notifier)
-                            .markComplete(profile.id);
-                      }
-                    : null,
-              ),
+              if (takeaways.isNotEmpty)
+                _KeyTakeawaysCollapsible(takeaways: takeaways),
+              Expanded(child: contentList),
+              bottomBar,
             ],
           );
         },
       ),
+    );
+  }
+}
+
+/// Side panel for web showing key takeaways.
+class _KeyTakeawaysPanel extends StatelessWidget {
+  final List<String> takeaways;
+  const _KeyTakeawaysPanel({required this.takeaways});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      color: theme.colorScheme.surfaceContainerLow,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline,
+                  color: theme.colorScheme.primary, size: 18),
+              const SizedBox(width: 6),
+              Text(AppStrings.keyTakeaways,
+                  style: theme.textTheme.titleSmall
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (takeaways.isEmpty)
+            Text('No key takeaways yet.',
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.secondary))
+          else
+            ...takeaways.map((t) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle_outline,
+                          size: 14,
+                          color: theme.colorScheme.primary),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(t,
+                            style: theme.textTheme.bodySmall),
+                      ),
+                    ],
+                  ),
+                )),
+        ],
+      ),
+    );
+  }
+}
+
+/// Collapsible key takeaways for mobile.
+class _KeyTakeawaysCollapsible extends StatelessWidget {
+  final List<String> takeaways;
+  const _KeyTakeawaysCollapsible({required this.takeaways});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ExpansionTile(
+      leading: Icon(Icons.lightbulb_outline, color: theme.colorScheme.primary),
+      title: Text(AppStrings.keyTakeaways,
+          style: theme.textTheme.titleSmall
+              ?.copyWith(fontWeight: FontWeight.bold)),
+      backgroundColor: theme.colorScheme.surfaceContainerLow,
+      collapsedBackgroundColor: theme.colorScheme.surfaceContainerLow,
+      childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      children: takeaways
+          .map((t) => Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.check_circle_outline,
+                        size: 14,
+                        color: theme.colorScheme.primary),
+                    const SizedBox(width: 6),
+                    Expanded(child: Text(t, style: theme.textTheme.bodySmall)),
+                  ],
+                ),
+              ))
+          .toList(),
     );
   }
 }
@@ -110,6 +235,30 @@ class _SectionWidget extends StatelessWidget {
             ),
             child: const Center(
                 child: Icon(Icons.image, size: 48, color: Colors.grey)),
+          ),
+        );
+      case 'key_takeaway':
+        // Render inline as a highlighted callout
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(8),
+            border: Border(
+              left: BorderSide(
+                  color: theme.colorScheme.primary, width: 3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.lightbulb_outline,
+                  color: theme.colorScheme.primary, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(content, style: theme.textTheme.bodyMedium),
+              ),
+            ],
           ),
         );
       default: // paragraph

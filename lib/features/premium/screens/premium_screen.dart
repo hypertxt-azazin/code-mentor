@@ -74,9 +74,9 @@ class PremiumScreen extends StatelessWidget {
                     price: '\$9.99',
                     period: '/month',
                     features: const [
-                      'All modules unlocked',
-                      'Unlimited practice',
-                      'Advanced quizzes',
+                      'All stages unlocked',
+                      'Unlimited drills',
+                      'Advanced checkpoints',
                     ],
                     isPrimary: false,
                     onTap: () => _showComingSoon(context),
@@ -128,10 +128,10 @@ class _ComparisonTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final rows = [
-      ('Practice attempts/day', '15', 'Unlimited'),
-      ('Modules per track', '2', 'All'),
+      ('Drill attempts/day', '15', 'Unlimited'),
+      ('Stages per roadmap', '2', 'All'),
       ('Progress tracking', 'Basic', 'Advanced'),
-      ('Quizzes', 'Module quizzes', 'Advanced quizzes'),
+      ('Checkpoints', 'Stage checkpoints', 'Advanced checkpoints'),
       ('Offline packs', '✗', 'Coming soon'),
     ];
 
