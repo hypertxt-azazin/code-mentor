@@ -1,0 +1,43 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# Build outputs
+build/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Android
+android/local.properties
+android/.gradle/
+android/key.properties
+*.jks
+
+# iOS / macOS / Windows / Linux (platform folders not committed for this project)
+ios/
+macos/
+windows/
+linux/
+
+# Web build artifacts (generated)
+web/
+
+# Environment / secrets
+.env
+.env.*
+
+# Coverage
+coverage/
+
+# Dart analysis
+*.dart.js
+*.dart.js.deps
+*.dart.js.map
+
+# macOS
+.DS_Store
