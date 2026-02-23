@@ -42,17 +42,19 @@ class UserProfile {
         'created_at': createdAt?.toIso8601String(),
       };
 
+  static const _sentinel = Object();
+
   UserProfile copyWith({
-    String? username,
-    String? displayName,
+    Object? username = _sentinel,
+    Object? displayName = _sentinel,
     List<String>? interests,
     bool? isAdmin,
     bool? isPremium,
   }) {
     return UserProfile(
       id: id,
-      username: username ?? this.username,
-      displayName: displayName ?? this.displayName,
+      username: identical(username, _sentinel) ? this.username : username as String?,
+      displayName: identical(displayName, _sentinel) ? this.displayName : displayName as String?,
       interests: interests ?? this.interests,
       isAdmin: isAdmin ?? this.isAdmin,
       isPremium: isPremium ?? this.isPremium,

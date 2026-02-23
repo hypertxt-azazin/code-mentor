@@ -33,17 +33,21 @@ class UserStreak {
         'updated_at': updatedAt?.toIso8601String(),
       };
 
+  static const _sentinel = Object();
+
   UserStreak copyWith({
     int? currentStreak,
     int? longestStreak,
-    DateTime? lastActivityDate,
-    DateTime? updatedAt,
+    Object? lastActivityDate = _sentinel,
+    Object? updatedAt = _sentinel,
   }) =>
       UserStreak(
         userId: userId,
         currentStreak: currentStreak ?? this.currentStreak,
         longestStreak: longestStreak ?? this.longestStreak,
-        lastActivityDate: lastActivityDate ?? this.lastActivityDate,
-        updatedAt: updatedAt ?? this.updatedAt,
+        lastActivityDate: identical(lastActivityDate, _sentinel)
+            ? this.lastActivityDate
+            : lastActivityDate as DateTime?,
+        updatedAt: identical(updatedAt, _sentinel) ? this.updatedAt : updatedAt as DateTime?,
       );
 }

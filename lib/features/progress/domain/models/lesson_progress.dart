@@ -45,12 +45,14 @@ class LessonProgress {
         'updated_at': updatedAt?.toIso8601String(),
       };
 
+  static const _sentinel = Object();
+
   LessonProgress copyWith({
     bool? isCompleted,
     int? challengesAttempted,
     int? challengesCorrect,
-    DateTime? completedAt,
-    DateTime? updatedAt,
+    Object? completedAt = _sentinel,
+    Object? updatedAt = _sentinel,
   }) =>
       LessonProgress(
         id: id,
@@ -59,7 +61,7 @@ class LessonProgress {
         isCompleted: isCompleted ?? this.isCompleted,
         challengesAttempted: challengesAttempted ?? this.challengesAttempted,
         challengesCorrect: challengesCorrect ?? this.challengesCorrect,
-        completedAt: completedAt ?? this.completedAt,
-        updatedAt: updatedAt ?? this.updatedAt,
+        completedAt: identical(completedAt, _sentinel) ? this.completedAt : completedAt as DateTime?,
+        updatedAt: identical(updatedAt, _sentinel) ? this.updatedAt : updatedAt as DateTime?,
       );
 }
