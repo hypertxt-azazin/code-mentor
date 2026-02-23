@@ -46,7 +46,21 @@ class HomeScreen extends ConsumerWidget {
                     ?.copyWith(color: theme.colorScheme.secondary)),
             const SizedBox(height: 20),
 
-            // Streak card
+            // ── Today's Plan ──────────────────────────────────────────
+            _SectionHeader(title: AppStrings.todayPlan),
+            const SizedBox(height: 8),
+            _TodayPlanCard(userId: userId, tracksAsync: tracksAsync),
+            const SizedBox(height: 20),
+
+            // ── Continue ──────────────────────────────────────────────
+            _SectionHeader(title: AppStrings.continueSection),
+            const SizedBox(height: 8),
+            _ContinueCard(userId: userId, tracksAsync: tracksAsync),
+            const SizedBox(height: 20),
+
+            // ── Streak ────────────────────────────────────────────────
+            _SectionHeader(title: AppStrings.streak),
+            const SizedBox(height: 8),
             if (userId.isNotEmpty)
               ref.watch(streakProvider(userId)).when(
                     loading: () => const SizedBox(height: 80),
@@ -60,21 +74,11 @@ class HomeScreen extends ConsumerWidget {
               const _StreakCard(current: 0, longest: 0),
             const SizedBox(height: 20),
 
-            // Quick stats
-            Row(
-              children: [
-                Expanded(child: _LessonsStatWidget(userId: userId)),
-                const SizedBox(width: 12),
-                Expanded(child: _BadgesStatWidget(userId: userId)),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Popular tracks
+            // ── Recommended Roadmaps ─────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Popular Tracks',
+                Text(AppStrings.recommendedRoadmaps,
                     style: theme.textTheme.titleMedium
                         ?.copyWith(fontWeight: FontWeight.bold)),
                 TextButton(
@@ -106,55 +110,194 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-class _LessonsStatWidget extends ConsumerWidget {
-  final String userId;
-  const _LessonsStatWidget({required this.userId});
+/// Simple section header widget.
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader({required this.title});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (userId.isEmpty) {
-      return const _StatCard(
-          label: AppStrings.lessonsCompleted,
-          value: '0',
-          icon: Icons.menu_book,
-          color: Colors.blue);
-    }
-    return ref.watch(lessonProgressProvider(userId)).when(
-          loading: () => const SizedBox(height: 60),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (progress) => _StatCard(
-            label: AppStrings.lessonsCompleted,
-            value: '${progress.length}',
-            icon: Icons.menu_book,
-            color: Colors.blue,
-          ),
-        );
+  Widget build(BuildContext context) {
+    return Text(title,
+        style: Theme.of(context)
+            .textTheme
+            .titleMedium
+            ?.copyWith(fontWeight: FontWeight.bold));
   }
 }
 
-class _BadgesStatWidget extends ConsumerWidget {
+/// Today's Plan: shows the next incomplete card the user should tackle.
+class _TodayPlanCard extends ConsumerWidget {
   final String userId;
-  const _BadgesStatWidget({required this.userId});
+  final AsyncValue<List<Track>> tracksAsync;
+  const _TodayPlanCard({required this.userId, required this.tracksAsync});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
     if (userId.isEmpty) {
-      return const _StatCard(
-          label: AppStrings.badges,
-          value: '0',
-          icon: Icons.emoji_events,
-          color: Colors.amber);
+      return _PlanPlaceholder(
+        message: 'Sign in to see your personalised plan.',
+        icon: Icons.calendar_today,
+      );
     }
-    return ref.watch(userBadgesProvider(userId)).when(
-          loading: () => const SizedBox(height: 60),
-          error: (_, __) => const SizedBox.shrink(),
-          data: (badges) => _StatCard(
-            label: AppStrings.badges,
-            value: '${badges.length}',
-            icon: Icons.emoji_events,
-            color: Colors.amber,
+
+    final progressAsync = ref.watch(lessonProgressProvider(userId));
+
+    return progressAsync.when(
+      loading: () => const SizedBox(height: 72),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (progress) {
+        final completedIds =
+            progress.where((p) => p.isCompleted).map((p) => p.lessonId).toSet();
+        final inProgressIds = progress
+            .where((p) => !p.isCompleted)
+            .map((p) => p.lessonId)
+            .toList();
+
+        // Show count of in-progress cards, or encourage start
+        final inProgressCount = inProgressIds.length;
+        final completedCount = completedIds.length;
+        final total = progress.length;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primaryContainer.withOpacity(0.35),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.calendar_today, size: 32),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      inProgressCount > 0
+                          ? '$inProgressCount card${inProgressCount == 1 ? '' : 's'} in progress'
+                          : completedCount > 0
+                              ? 'Great work! Keep the momentum going.'
+                              : 'Start your first roadmap today!',
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    if (total > 0)
+                      Text(
+                        '$completedCount / $total cards completed',
+                        style: theme.textTheme.bodySmall,
+                      ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios, size: 16),
+            ],
           ),
         );
+      },
+    );
+  }
+}
+
+/// Continue: prominent resume area for the last in-progress roadmap.
+class _ContinueCard extends ConsumerWidget {
+  final String userId;
+  final AsyncValue<List<Track>> tracksAsync;
+  const _ContinueCard({required this.userId, required this.tracksAsync});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+
+    return tracksAsync.when(
+      loading: () => const SizedBox(height: 72),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (tracks) {
+        if (tracks.isEmpty) {
+          return _PlanPlaceholder(
+            message: 'No roadmaps available yet.',
+            icon: Icons.map_outlined,
+          );
+        }
+        // Use the first track as the "continue" item
+        final track = tracks.first;
+        return InkWell(
+          onTap: () => context.push('/track/${track.id}'),
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.7),
+                  theme.colorScheme.primary,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.play_circle_filled,
+                    color: Colors.white, size: 36),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        track.title,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppStrings.continueTrack,
+                        style: const TextStyle(
+                            color: Colors.white70, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios,
+                    color: Colors.white, size: 16),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PlanPlaceholder extends StatelessWidget {
+  final String message;
+  final IconData icon;
+  const _PlanPlaceholder({required this.message, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 28, color: theme.colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Text(message, style: theme.textTheme.bodyMedium)),
+        ],
+      ),
+    );
   }
 }
 
@@ -207,48 +350,6 @@ class _StreakCard extends StatelessWidget {
                       fontWeight: FontWeight.bold)),
               const Text(AppStrings.longestStreak,
                   style: TextStyle(color: Colors.white70, fontSize: 12)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-  const _StatCard(
-      {required this.label,
-      required this.value,
-      required this.icon,
-      required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: theme.textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.bold, color: color)),
-              Text(label,
-                  style: theme.textTheme.labelSmall
-                      ?.copyWith(color: theme.colorScheme.secondary)),
             ],
           ),
         ],

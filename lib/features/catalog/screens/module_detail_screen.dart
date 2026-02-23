@@ -33,8 +33,8 @@ class ModuleDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: moduleAsync.maybeWhen(
-          data: (m) => Text(m?.title ?? 'Module'),
-          orElse: () => const Text('Module'),
+          data: (m) => Text(m?.title ?? AppStrings.module),
+          orElse: () => Text(AppStrings.module),
         ),
       ),
       body: moduleAsync.when(

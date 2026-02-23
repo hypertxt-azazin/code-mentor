@@ -38,9 +38,9 @@ class AdminScreen extends ConsumerWidget {
           title: const Text(AppStrings.adminPanel),
           bottom: const TabBar(
             tabs: [
-              Tab(text: 'Tracks'),
-              Tab(text: 'Modules'),
-              Tab(text: 'Lessons'),
+              Tab(text: 'Roadmaps'),
+              Tab(text: 'Stages'),
+              Tab(text: 'Cards'),
             ],
           ),
         ),
@@ -207,7 +207,7 @@ class _LessonsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Center(
       child: Text(
-          'Select a module in the Modules tab to manage its lessons.'),
+          'Select a stage in the Stages tab to manage its cards.'),
     );
   }
 }

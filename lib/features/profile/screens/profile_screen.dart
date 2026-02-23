@@ -106,7 +106,7 @@ class ProfileScreen extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.workspace_premium, color: Colors.amber),
               title: const Text(AppStrings.upgrade),
-              subtitle: const Text('Unlock all modules & unlimited practice'),
+              subtitle: const Text('Unlock all stages & unlimited drills'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => context.push('/premium'),
             ),

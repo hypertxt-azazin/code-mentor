@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:code_mentor/app/providers.dart';
 import 'package:code_mentor/core/constants/strings.dart';
 import 'package:code_mentor/core/widgets/error_widget.dart';
 import 'package:code_mentor/core/widgets/loading_widget.dart';
 import 'package:code_mentor/features/catalog/controllers/catalog_controller.dart';
 import 'package:code_mentor/features/catalog/domain/models/module.dart';
 import 'package:code_mentor/features/catalog/domain/models/track.dart';
+import 'package:code_mentor/features/progress/controllers/progress_controller.dart';
 
 class TrackDetailScreen extends ConsumerWidget {
   final String trackId;
@@ -32,8 +34,8 @@ class TrackDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: trackAsync.maybeWhen(
-          data: (t) => Text(t?.title ?? 'Track'),
-          orElse: () => const Text('Track'),
+          data: (t) => Text(t?.title ?? AppStrings.track),
+          orElse: () => Text(AppStrings.track),
         ),
       ),
       body: trackAsync.when(
@@ -49,6 +51,16 @@ class TrackDetailScreen extends ConsumerWidget {
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: _TrackHeader(track: track, theme: theme)),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+                  child: Text(
+                    AppStrings.modules,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
               modulesAsync.when(
                 loading: () => const SliverFillRemaining(
                     child: LoadingWidget()),
@@ -61,10 +73,10 @@ class TrackDetailScreen extends ConsumerWidget {
                     );
                   }
                   return SliverPadding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
-                        (context, i) => _ModuleCard(
+                        (context, i) => _StageCard(
                           module: modules[i],
                           index: i,
                         ),
@@ -145,17 +157,27 @@ class _TrackHeader extends StatelessWidget {
   }
 }
 
-class _ModuleCard extends ConsumerWidget {
+/// Stage card with lock icon and progress bar.
+class _StageCard extends ConsumerWidget {
   final CourseModule module;
   final int index;
-  const _ModuleCard({required this.module, required this.index});
+  const _StageCard({required this.module, required this.index});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isUnlocked =
         ref.watch(moduleUnlockProvider((module.id, module.order)));
     final lessonsAsync = ref.watch(lessonsProvider(module.id));
+    final profile = ref.watch(currentUserProfileProvider);
     final theme = Theme.of(context);
+
+    // Compute per-stage progress
+    final completedIds = profile != null
+        ? ref.watch(lessonProgressProvider(profile.id)).maybeWhen(
+            data: (p) =>
+                p.where((lp) => lp.isCompleted).map((lp) => lp.lessonId).toSet(),
+            orElse: () => <String>{})
+        : <String>{};
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -166,51 +188,88 @@ class _ModuleCard extends ConsumerWidget {
             : () => _showUpgradeSheet(context),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                backgroundColor: isUnlocked
-                    ? theme.colorScheme.primaryContainer
-                    : Colors.grey.shade200,
-                child: isUnlocked
-                    ? Text(
-                        '${index + 1}',
-                        style: TextStyle(
-                            color: theme.colorScheme.onPrimaryContainer),
-                      )
-                    : const Icon(Icons.lock, size: 18, color: Colors.grey),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(module.title,
-                        style: theme.textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(
-                      module.description.length > 80
-                          ? '${module.description.substring(0, 80)}…'
-                          : module.description,
-                      style: theme.textTheme.bodySmall,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: isUnlocked
+                        ? theme.colorScheme.primaryContainer
+                        : Colors.grey.shade200,
+                    child: isUnlocked
+                        ? Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                                color: theme.colorScheme.onPrimaryContainer),
+                          )
+                        : const Icon(Icons.lock, size: 18, color: Colors.grey),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(module.title,
+                            style: theme.textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(
+                          module.description.length > 80
+                              ? '${module.description.substring(0, 80)}…'
+                              : module.description,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                        const SizedBox(height: 8),
+                        lessonsAsync.when(
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                          data: (lessons) => Text(
+                            '${lessons.length} ${AppStrings.lessons.toLowerCase()}',
+                            style: theme.textTheme.labelSmall
+                                ?.copyWith(color: theme.colorScheme.primary),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8),
-                    lessonsAsync.when(
-                      loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
-                      data: (lessons) => Text(
-                        '${lessons.length} lessons',
-                        style: theme.textTheme.labelSmall
-                            ?.copyWith(color: theme.colorScheme.primary),
+                  ),
+                  if (!isUnlocked)
+                    const Icon(Icons.lock_outline, color: Colors.grey),
+                ],
+              ),
+              // Progress bar per stage
+              const SizedBox(height: 10),
+              lessonsAsync.when(
+                loading: () =>
+                    const LinearProgressIndicator(value: 0),
+                error: (_, __) => const SizedBox.shrink(),
+                data: (lessons) {
+                  if (lessons.isEmpty) return const SizedBox.shrink();
+                  final doneCount =
+                      lessons.where((l) => completedIds.contains(l.id)).length;
+                  final progressValue = doneCount / lessons.length;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: progressValue,
+                          minHeight: 6,
+                          backgroundColor:
+                              theme.colorScheme.surfaceContainerHighest,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$doneCount / ${lessons.length} cards',
+                        style: theme.textTheme.labelSmall,
+                      ),
+                    ],
+                  );
+                },
               ),
-              if (!isUnlocked)
-                const Icon(Icons.lock_outline, color: Colors.grey),
             ],
           ),
         ),

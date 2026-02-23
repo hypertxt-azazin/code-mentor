@@ -76,8 +76,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                         .where((t) => t.title.toLowerCase().contains(_query))
                         .toList();
                 if (filtered.isEmpty) {
-                  return const Center(child: Text(AppStrings.noTracksFound));
-                }
+                  return const Center(child: Text(AppStrings.noTracksFound));                }
                 return ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   itemCount: filtered.length,
@@ -193,7 +192,7 @@ class _TrackCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${modules.length} modules',
+                        '${modules.length} ${AppStrings.modules.toLowerCase()}',
                         style: theme.textTheme.labelSmall,
                       ),
                     ],

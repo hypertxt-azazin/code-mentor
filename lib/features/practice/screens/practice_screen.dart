@@ -33,92 +33,247 @@ class PracticeScreen extends ConsumerWidget {
 
     final current = state.current!;
     final currentNum = state.currentIndex + 1;
+    final isWide = MediaQuery.of(context).size.width >= 720;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(AppStrings.practice),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-                child: Text('$currentNum / $total',
-                    style: const TextStyle(fontWeight: FontWeight.bold))),
-          ),
-        ],
       ),
       body: Column(
         children: [
-          LinearProgressIndicator(value: currentNum / total),
+          // Top stepper on mobile
+          if (!isWide) _TopStepper(current: currentNum, total: total),
           if (state.challenges.isNotEmpty && state.remainingAttempts < 999)
             _AttemptsBar(remaining: state.remainingAttempts),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Prompt
-                  Text(current.prompt,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
+            child: isWide
+                // Web: left stepper + content
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _LeftStepper(
+                        current: currentNum,
+                        total: total,
+                        onTap: (i) {
+                          // Allow navigating only to already-seen steps
+                          if (i < state.currentIndex) {
+                            // no-op – controller doesn't support back nav
+                          }
+                        },
+                      ),
+                      const VerticalDivider(width: 1),
+                      Expanded(
+                        child: _DrillContent(
+                          state: state,
+                          ctrl: ctrl,
+                          total: total,
+                          current: current,
+                        ),
+                      ),
+                    ],
+                  )
+                : _DrillContent(
+                    state: state,
+                    ctrl: ctrl,
+                    total: total,
+                    current: current,
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-                  // Answer input
-                  if (!state.submitted) ...[
-                    if (current.type == 'multiple_choice')
-                      _MultipleChoiceInput(
-                        options: (current.data['options'] as List<dynamic>?)
-                                ?.cast<String>() ??
-                            [],
-                        selected: state.userAnswer,
-                        onSelect: (i) => ctrl.setAnswer(i.toString()),
-                      )
-                    else if (current.type == 'short_text')
-                      _TextInput(
-                        hint: AppStrings.yourAnswer,
-                        onChanged: ctrl.setAnswer,
-                      )
-                    else
-                      _TextInput(
-                        hint: 'Write your code here…',
-                        multiline: true,
-                        onChanged: ctrl.setAnswer,
-                      ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: state.userAnswer != null
-                            ? () => ctrl.submitAnswer()
-                            : null,
-                        child: const Text(AppStrings.submit),
-                      ),
+/// Top stepper shown on mobile — a labelled progress bar.
+class _TopStepper extends StatelessWidget {
+  final int current;
+  final int total;
+  const _TopStepper({required this.current, required this.total});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: theme.colorScheme.surfaceContainerLow,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppStrings.challengeOf
+                    .replaceFirst('{current}', '$current')
+                    .replaceFirst('{total}', '$total'),
+                style: theme.textTheme.labelMedium,
+              ),
+              Text('$current / $total',
+                  style: theme.textTheme.labelMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          LinearProgressIndicator(
+            value: current / total,
+            minHeight: 6,
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Left stepper shown on web — vertical list of step indicators.
+class _LeftStepper extends StatelessWidget {
+  final int current;
+  final int total;
+  final void Function(int) onTap;
+  const _LeftStepper(
+      {required this.current, required this.total, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: 80,
+      color: theme.colorScheme.surfaceContainerLow,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: List.generate(total, (i) {
+          final stepNum = i + 1;
+          final isDone = stepNum < current;
+          final isActive = stepNum == current;
+          return GestureDetector(
+            onTap: () => onTap(i),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isActive
+                          ? theme.colorScheme.primary
+                          : isDone
+                              ? Colors.green
+                              : theme.colorScheme.surfaceContainerHighest,
                     ),
-                  ] else ...[
-                    // Feedback
-                    _FeedbackCard(
-                      isCorrect: state.isCorrect ?? false,
-                      explanation: current.data['explanation'] as String? ?? '',
-                      userAnswer: state.userAnswer ?? '',
-                      correctAnswer: _correctAnswerText(current),
+                    child: Center(
+                      child: isDone
+                          ? const Icon(Icons.check,
+                              color: Colors.white, size: 16)
+                          : Text(
+                              '$stepNum',
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isActive
+                                      ? Colors.white
+                                      : theme.colorScheme.onSurface),
+                            ),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: ctrl.nextChallenge,
-                        child: Text(state.currentIndex + 1 < total
-                            ? AppStrings.nextChallenge
-                            : 'View Summary'),
-                      ),
+                  ),
+                  if (i < total - 1)
+                    Container(
+                      width: 2,
+                      height: 16,
+                      color: isDone
+                          ? Colors.green
+                          : theme.colorScheme.surfaceContainerHighest,
                     ),
-                  ],
                 ],
               ),
             ),
-          ),
+          );
+        }),
+      ),
+    );
+  }
+}
+
+/// The main drill content (question + answer input + feedback).
+class _DrillContent extends StatelessWidget {
+  final PracticeState state;
+  final PracticeController ctrl;
+  final int total;
+  final dynamic current;
+  const _DrillContent({
+    required this.state,
+    required this.ctrl,
+    required this.total,
+    required this.current,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Prompt
+          Text(current.prompt,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+
+          // Answer input
+          if (!state.submitted) ...[
+            if (current.type == 'multiple_choice')
+              _MultipleChoiceInput(
+                options: (current.data['options'] as List<dynamic>?)
+                        ?.cast<String>() ??
+                    [],
+                selected: state.userAnswer,
+                onSelect: (i) => ctrl.setAnswer(i.toString()),
+              )
+            else if (current.type == 'short_text')
+              _TextInput(
+                hint: AppStrings.yourAnswer,
+                onChanged: ctrl.setAnswer,
+              )
+            else
+              _TextInput(
+                hint: 'Write your code here…',
+                multiline: true,
+                onChanged: ctrl.setAnswer,
+              ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: state.userAnswer != null
+                    ? () => ctrl.submitAnswer()
+                    : null,
+                child: const Text(AppStrings.submit),
+              ),
+            ),
+          ] else ...[
+            // Feedback
+            _FeedbackCard(
+              isCorrect: state.isCorrect ?? false,
+              explanation: current.data['explanation'] as String? ?? '',
+              userAnswer: state.userAnswer ?? '',
+              correctAnswer: _correctAnswerText(current),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: ctrl.nextChallenge,
+                child: Text(state.currentIndex + 1 < total
+                    ? AppStrings.nextChallenge
+                    : 'View Summary'),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -300,11 +455,10 @@ class _SummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(practiceControllerProvider(lessonId));
-    // Count correct from state (submitted answers)
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Practice Complete')),
+      appBar: AppBar(title: const Text('Drills Complete')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -313,14 +467,14 @@ class _SummaryScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.emoji_events, color: Colors.amber, size: 72),
               const SizedBox(height: 16),
-              Text('You finished all $total challenges!',
+              Text('You finished all $total drills!',
                   style: theme.textTheme.titleLarge
                       ?.copyWith(fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center),
               const SizedBox(height: 32),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Back to Lesson'),
+                child: const Text('Back to Card'),
               ),
             ],
           ),
