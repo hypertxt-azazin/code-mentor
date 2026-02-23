@@ -82,9 +82,9 @@ class SeedData {
       ];
 
   // ── Modules ────────────────────────────────────────────────────────────────
-  static List<Module> get modules => [
+  static List<CourseModule> get modules => [
         // Python Fundamentals
-        const Module(
+        const CourseModule(
           id: 'mod-py-01',
           trackId: 'track-001',
           title: 'Variables & Data Types',
@@ -92,7 +92,7 @@ class SeedData {
           order: 1,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-py-02',
           trackId: 'track-001',
           title: 'Control Flow',
@@ -100,7 +100,7 @@ class SeedData {
           order: 2,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-py-03',
           trackId: 'track-001',
           title: 'Functions',
@@ -108,7 +108,7 @@ class SeedData {
           order: 3,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-py-04',
           trackId: 'track-001',
           title: 'Lists & Dictionaries',
@@ -118,7 +118,7 @@ class SeedData {
         ),
 
         // Web Development Basics
-        const Module(
+        const CourseModule(
           id: 'mod-web-01',
           trackId: 'track-002',
           title: 'HTML Essentials',
@@ -126,7 +126,7 @@ class SeedData {
           order: 1,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-web-02',
           trackId: 'track-002',
           title: 'CSS Styling',
@@ -134,7 +134,7 @@ class SeedData {
           order: 2,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-web-03',
           trackId: 'track-002',
           title: 'JavaScript Basics',
@@ -142,7 +142,7 @@ class SeedData {
           order: 3,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-web-04',
           trackId: 'track-002',
           title: 'Responsive Design',
@@ -152,7 +152,7 @@ class SeedData {
         ),
 
         // Data Structures & Algorithms
-        const Module(
+        const CourseModule(
           id: 'mod-dsa-01',
           trackId: 'track-003',
           title: 'Arrays & Strings',
@@ -160,7 +160,7 @@ class SeedData {
           order: 1,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-dsa-02',
           trackId: 'track-003',
           title: 'Linked Lists',
@@ -168,7 +168,7 @@ class SeedData {
           order: 2,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-dsa-03',
           trackId: 'track-003',
           title: 'Sorting & Searching',
@@ -176,7 +176,7 @@ class SeedData {
           order: 3,
           passPercent: 70,
         ),
-        const Module(
+        const CourseModule(
           id: 'mod-dsa-04',
           trackId: 'track-003',
           title: 'Stacks & Queues',

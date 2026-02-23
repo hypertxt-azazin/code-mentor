@@ -1,4 +1,4 @@
-class Module {
+class CourseModule {
   final String id;
   final String trackId;
   final String title;
@@ -7,7 +7,7 @@ class Module {
   final int passPercent;
   final DateTime? createdAt;
 
-  const Module({
+  const CourseModule({
     required this.id,
     required this.trackId,
     required this.title,
@@ -17,7 +17,7 @@ class Module {
     this.createdAt,
   });
 
-  factory Module.fromJson(Map<String, dynamic> json) => Module(
+  factory CourseModule.fromJson(Map<String, dynamic> json) => CourseModule(
         id: json['id'] as String,
         trackId: json['track_id'] as String,
         title: json['title'] as String,
